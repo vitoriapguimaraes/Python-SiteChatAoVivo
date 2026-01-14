@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: hashzap
+Version: 0.1.0
+Summary: A professional real-time chat application
+Author-email: Vitoria <vitoria@example.com>
+Requires-Python: >=3.8
+License-File: LICENSE
+Requires-Dist: flask
+Requires-Dist: flask-socketio
+Requires-Dist: flet
+Requires-Dist: python-dotenv
+Requires-Dist: eventlet
+Dynamic: license-file

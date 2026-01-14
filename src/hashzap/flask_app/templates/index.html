@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hashzap | Live Chat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #075e54;
+        --primary-light: #128c7e;
+        --bg-page: #f0f2f5;
+        --bg-chat: #e5ddd5;
+        --bubble-sent: #dcf8c6;
+        --bubble-text: #303030;
+        --text-muted: #667781;
+        --white: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg-page);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        background-color: var(--primary);
+        color: var(--white);
+        padding: 1rem;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+      }
+
+      #chat-container {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
+        background-color: var(--bg-chat);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .message {
+        max-width: 80%;
+        padding: 8px 12px;
+        border-radius: 8px;
+        position: relative;
+        box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+        font-size: 0.95rem;
+        line-height: 1.4;
+        word-wrap: break-word;
+      }
+
+      .message.received {
+        background-color: var(--white);
+        align-self: flex-start;
+      }
+
+      .message .user {
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: var(--primary-light);
+        margin-bottom: 2px;
+        display: block;
+      }
+
+      .message .content {
+        color: var(--bubble-text);
+      }
+
+      .message .time {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        float: right;
+        margin-top: 4px;
+        margin-left: 8px;
+      }
+
+      #input-area {
+        background-color: #f0f2f5;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-top: 1px solid #ddd;
+      }
+
+      .input-group {
+        display: flex;
+        flex: 1;
+        gap: 10px;
+        background-color: var(--white);
+        border-radius: 25px;
+        padding: 5px 15px;
+        align-items: center;
+      }
+
+      #usuario {
+        width: 120px;
+        border: none;
+        padding: 8px 0;
+        font-weight: 600;
+        color: var(--primary);
+        border-right: 1px solid #eee;
+        margin-right: 5px;
+        outline: none;
+      }
+
+      #mensagem {
+        flex: 1;
+        border: none;
+        padding: 8px 0;
+        outline: none;
+        font-size: 0.95rem;
+      }
+
+      #botao {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s, background-color 0.2s;
+      }
+
+      #botao:hover {
+        background-color: var(--primary-light);
+        transform: scale(1.05);
+      }
+
+      #botao svg {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+        transform: rotate(45deg);
+      }
+
+      /* Scrollbar aesthetics */
+      #chat-container::-webkit-scrollbar {
+        width: 6px;
+      }
+      #chat-container::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Hashzap</h1>
+    </header>
+
+    <div id="chat-container">
+      <!-- Mensagens aparecerão aqui -->
+    </div>
+
+    <div id="input-area">
+      <div class="input-group">
+        <input type="text" id="usuario" placeholder="Seu Nome" maxlength="15" />
+        <input
+          type="text"
+          id="mensagem"
+          placeholder="Digite uma mensagem..."
+          autocomplete="off"
+        />
+      </div>
+      <button id="botao" title="Enviar">
+        <svg viewBox="0 0 24 24">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+        </svg>
+      </button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.1/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        const socket = io(); // Conecta ao servidor atual
+        const $chat = $("#chat-container");
+        const $user = $("#usuario");
+        const $msg = $("#mensagem");
+
+        // Gerar nome aleatório se estiver vazio
+        if (!$user.val()) {
+          $user.val("User" + Math.floor(Math.random() * 1000));
+        }
+
+        socket.on("connect", () => console.log("Conectado ao Hashzap!"));
+
+        socket.on("message", function (data) {
+          const messageHtml = `
+                    <div class="message received">
+                        <span class="user">${data.usuario}</span>
+                        <div class="content">${data.texto}</div>
+                        <span class="time">${data.timestamp}</span>
+                    </div>
+                `;
+          $chat.append(messageHtml);
+          $chat.scrollTop($chat[0].scrollHeight);
+        });
+
+        function enviar() {
+          const texto = $msg.val().trim();
+          const usuario = $user.val().trim();
+
+          if (texto && usuario) {
+            socket.emit("message", {
+              usuario: usuario,
+              texto: texto,
+            });
+            $msg.val("").focus();
+          } else if (!usuario) {
+            alert("Por favor, digite seu nome!");
+          }
+        }
+
+        $("#botao").on("click", enviar);
+
+        $msg.on("keypress", function (e) {
+          if (e.which === 13) enviar();
+        });
+      });
+    </script>
+  </body>
+</html>

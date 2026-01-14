@@ -1,0 +1,5 @@
+flask
+flask-socketio
+flet
+python-dotenv
+eventlet
