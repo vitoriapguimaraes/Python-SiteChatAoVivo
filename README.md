@@ -79,12 +79,12 @@
 
 ## Status
 
-✅ **Concluído**
+✅ Concluído
+
+> Veja as [issues abertas](https://github.com/hashzap/issues) para sugestões de melhorias e próximos passos.
 
 ---
 
 ## Mais Sobre Mim
 
 Acesse os arquivos disponíveis na [Pasta Documentos](https://github.com/vitoriapguimaraes/vitoriapguimaraes/tree/main/DOCUMENTOS) para mais informações sobre minhas qualificações e certificações.
-
-Desenvolvido por [github.com/vitoriapguimaraes](https://github.com/vitoriapguimaraes)
